@@ -1,0 +1,43 @@
+# OS
+Thumbs.db
+.DS_Store
+
+# Windows image file caches
+ehthumbs.db
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+venv/
+env/
+ENV/
+.venv/
+
+# Visual Studio Code
+.vscode/
+# keep workspace settings file under version control
+!.vscode/settings.json
+
+# Logs
+*.log
+
+# macOS
+.Spotlight-V100
+.Trashes
+
+# PDF / output
+output/
+*.pdf
+
+# Images from tests / temporary
+tmp/
+temp/

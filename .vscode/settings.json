@@ -1,0 +1,11 @@
+{
+  // Workspace settings to configure yzane.markdown-pdf
+  // This disables header/footer and removes page numbers when exporting PDF
+  "markdown-pdf.displayHeaderFooter": false,
+  // keep templates empty as a fallback
+  "markdown-pdf.headerTemplate": "",
+  "markdown-pdf.footerTemplate": "",
+  // Recommended: ensure print background and default format
+  "markdown-pdf.printBackground": true,
+  "markdown-pdf.format": "A4"
+}

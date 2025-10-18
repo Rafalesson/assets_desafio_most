@@ -1,0 +1,2840 @@
+{
+  "name": "core-cnh-validation",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mostqiapi.com/process-image/content-extraction",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $items(\"ctx:attach-jwt-idp\")[0].json.authHeader }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "fileUrl",
+              "value": "={{ $node[\"normalize-input\"].json.frontUrl }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -704
+      ],
+      "id": "1f3a96b4-5ba3-4e1a-922a-b5447bf70d19",
+      "name": "idp:content-extraction"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c88f30a4-670c-4a16-ad9a-a62a770e3ba4",
+              "name": "idp",
+              "value": "={{ $json }}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1680,
+        -864
+      ],
+      "id": "ede70dfa-2559-4ecd-bd1e-3a55685326a6",
+      "name": "store:idp"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "29ec8e0f-ac6a-49de-a605-c69bcbefff19",
+              "name": "vio",
+              "value": "={{ $json }}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1680,
+        -528
+      ],
+      "id": "51bd93ee-5a0e-465e-8c4e-cb3246938327",
+      "name": "store:vio"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mostqiapi.com/process-image/vio-extraction",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ \"Bearer \" + $json.jwt }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "fileUrl",
+              "value": "={{ $node[\"normalize-input\"].json.backUrl }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -512
+      ],
+      "id": "5691efa9-f858-4f73-88b2-62904635383c",
+      "name": "vio:extraction"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c7d3ad27-9cac-4af0-8ab9-fab911d3493f",
+              "name": "__norm",
+              "value": "={{\n({cpf_idp: $json.cpf_idp,\nnome_idp: $json.nome_idp,\nnasc_idp: $json.nasc_idp,\nlocal_nasc_idp: $json.birth_place_idp,\nnome_pai_idp: $json.father_name_idp,\nnome_mae_idp: $json.mother_name_idp,\nemissao_idp: $json.emissao_idp,\nvalidade_idp: $json.validade_idp,\ncategoria_idp: $json.categoria_idp,\ntipo_hab_idp: $json.tipo_hab_idp,\ncpf_vio: $json.cpf_vio,\nnome_vio: $json.nome_vio,\nnasc_vio: $json.nasc_vio,\nlocal_nasc_vio: $json.birth_place_vio,\nnome_pai_vio: $json.father_name_vio,\nnome_mae_vio: $json.mother_name_vio,\nemissao_vio: $json.emissao_vio,\nvalidade_vio: $json.validade_vio,\ncategoria_vio: $json.categoria_vio,\ntipo_hab_vio: $json.tipo_hab_vio,\n}) \n}}",
+              "type": "object"
+            },
+            {
+              "id": "7b95331e-3f9e-4a95-b825-4ad2ff014719",
+              "name": "match_nome",
+              "value": "={{\n  (\n    ($json.nome_idp ?? '').toString().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\s+/g,' ').trim().toUpperCase()\n  ) === (\n    ($json.nome_vio ?? '').toString().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\s+/g,' ').trim().toUpperCase()\n  )\n}}",
+              "type": "boolean"
+            },
+            {
+              "id": "790738c3-43bf-4c6b-9761-87a9c1a140dd",
+              "name": "match_cpf",
+              "value": "={{\n  (($json.cpf_idp ?? '').toString().replace(/\\D/g,'')) ===\n  (($json.cpf_vio ?? '').toString().replace(/\\D/g,''))\n}}",
+              "type": "boolean"
+            },
+            {
+              "id": "0bd211bc-24bf-493a-b0e6-01996f6c5abc",
+              "name": "match_nasc",
+              "value": "={{\n  ($json.nasc_idp ? new Date($json.nasc_idp).toISOString().slice(0,10) : '') ===\n  ($json.nasc_vio ? new Date($json.nasc_vio).toISOString().slice(0,10) : '')\n}}",
+              "type": "boolean"
+            },
+            {
+              "id": "fa9d2715-c798-41b6-a8f0-f11a0576685f",
+              "name": "match_emissao",
+              "value": "={{\n  ($json.emissao_idp ? new Date($json.emissao_idp).toISOString().slice(0,10) : '') ===\n  ($json.emissao_vio ? new Date($json.emissao_vio).toISOString().slice(0,10) : '')\n}}",
+              "type": "boolean"
+            },
+            {
+              "id": "ca508bca-debd-49e7-a906-697a96853faf",
+              "name": "match_validade",
+              "value": "={{\n  ($json.validade_idp ? new Date($json.validade_idp).toISOString().slice(0,10) : '') ===\n  ($json.validade_vio ? new Date($json.validade_vio).toISOString().slice(0,10) : '')\n}}",
+              "type": "boolean"
+            },
+            {
+              "id": "414b67e1-c24d-4930-bb2c-599720b88967",
+              "name": "match_categoria",
+              "value": "={{\n  ($json.categoria_idp ?? '').toString().trim().toUpperCase() ===\n  ($json.categoria_vio ?? '').toString().trim().toUpperCase()\n}}",
+              "type": "boolean"
+            },
+            {
+              "id": "85589201-8e36-4c06-ad24-453403aa0c34",
+              "name": "match_tipo_hab",
+              "value": "={{\n  ($json.tipo_hab_idp ?? '').toString().trim().toUpperCase() ===\n  ($json.tipo_hab_vio ?? '').toString().trim().toUpperCase()\n}}",
+              "type": "boolean"
+            },
+            {
+              "id": "bfdde33b-34fc-4104-bc33-e07b2981642e",
+              "name": "match_mother_name",
+              "value": "={{\n  ($json.mother_name_idp ?? '').toString().trim().toUpperCase() ==\n  ($json.mother_name_vio ?? '').toString().trim().toUpperCase()\n}}",
+              "type": "boolean"
+            },
+            {
+              "id": "9ba4d660-c3ec-49bc-b379-e52bbc69df95",
+              "name": "match_father_name",
+              "value": "={{\n  ($json.father_name_idp ?? '').toString().trim().toUpperCase() ==\n  ($json.father_name_vio ?? '').toString().trim().toUpperCase()\n}}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2864,
+        -688
+      ],
+      "id": "f9ef6939-a70d-473b-8e3d-d3906d00b41c",
+      "name": "compare:fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4760facb-3900-44cf-9325-33839aba3ec5",
+              "name": "score_final",
+              "value": "={{\n(() => {\n  // 1) Pesos por campo (ajuste se precisar, somam 1.00)\n  const w = {\n    cpf:       0.40,\n    nome:      0.20,\n    nasc:      0.15,\n    emissao:   0.10,\n    validade:  0.10,\n    categoria: 0.03,\n    tipo_hab:  0.02,\n  };\n\n  // 2) Matches vindos do compare:fields (garanto boolean)\n  const m = {\n    cpf:       Boolean($json.match_cpf),\n    nome:      Boolean($json.match_nome),\n    nasc:      Boolean($json.match_nasc),\n    emissao:   Boolean($json.match_emissao),\n    validade:  Boolean($json.match_validade),\n    categoria: Boolean($json.match_categoria),\n    tipo_hab:  Boolean($json.match_tipo_hab),\n  };\n\n  // 3) Soma ponderada dos acertos\n  const score =\n    w.cpf       * (m.cpf       ? 1 : 0) +\n    w.nome      * (m.nome      ? 1 : 0) +\n    w.nasc      * (m.nasc      ? 1 : 0) +\n    w.emissao   * (m.emissao   ? 1 : 0) +\n    w.validade  * (m.validade  ? 1 : 0) +\n    w.categoria * (m.categoria ? 1 : 0) +\n    w.tipo_hab  * (m.tipo_hab  ? 1 : 0);\n\n  // 4) Normalizo e limito em [0,1]\n  const s = Math.max(0, Math.min(1, Number(score)));\n  return Number(s.toFixed(6));\n})()\n}}",
+              "type": "number"
+            },
+            {
+              "id": "b7d04b0c-3c28-4cb5-bcb1-b91e8fe08340",
+              "name": "score_breakdown",
+              "value": "={{\n(() => {\n  const w = {\n    cpf:0.40, nome:0.20, nasc:0.15, emissao:0.10, validade:0.10, categoria:0.03, tipo_hab:0.02\n  };\n  const m = {\n    cpf: $json.match_cpf, nome: $json.match_nome, nasc: $json.match_nasc,\n    emissao: $json.match_emissao, validade: $json.match_validade,\n    categoria: $json.match_categoria, tipo_hab: $json.match_tipo_hab,\n  };\n  const block = (k) => ({\n    match: Boolean(m[k]),\n    weight: w[k],\n    contrib: Number((w[k] * (m[k] ? 1 : 0)).toFixed(6)),\n  });\n  return {\n    cpf: block('cpf'),\n    nome: block('nome'),\n    nasc: block('nasc'),\n    emissao: block('emissao'),\n    validade: block('validade'),\n    categoria: block('categoria'),\n    tipo_hab: block('tipo_hab'),\n  };\n})()\n}}",
+              "type": "object"
+            },
+            {
+              "id": "6ad9444f-5416-477d-80d0-79c7068786f9",
+              "name": "approve_min",
+              "value": "={{ $json.approve_min ?? 0.90 }}",
+              "type": "number"
+            },
+            {
+              "id": "86e75bf2-333d-40fd-84fd-adc5e2eb89cb",
+              "name": "review_min",
+              "value": "={{ $json.review_min ?? 0.75 }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3280,
+        -688
+      ],
+      "id": "29936fe6-33dc-4ce2-a1b7-bc76cfeed22e",
+      "name": "calc:score"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2399956e-2cc3-4903-86c6-163af2144692",
+              "name": "=hard_block",
+              "value": "={{ $json.hard_block ?? false }}",
+              "type": "boolean"
+            },
+            {
+              "id": "ce4d14e8-4c01-4db2-912d-c9f05a775b8c",
+              "name": "status",
+              "value": "={{\n(() => {\n  const score   = Number($items(\"calc:score\")[0].json.score_final ?? 0);\n  const approve = Number($items(\"policy:thresholds\")[0].json.approve_min ?? 0.9);\n  const review  = Number($items(\"policy:thresholds\")[0].json.review_min  ?? 0.75);\n  const hard    = $json.hard_block === true;\n\n  if (hard)              return 'fail';\n  if (score >= approve)  return 'match';\n  if (score >= review)   return 'review';\n  return 'fail';\n})()\n}}",
+              "type": "string"
+            },
+            {
+              "id": "7b4338aa-d8ed-4a44-8222-2377f45520cc",
+              "name": "status_reason",
+              "value": "={{\n(() => {\n  const score   = Number($items(\"calc:score\")[0].json.score_final ?? 0);\n  const approve = Number($items(\"policy:thresholds\")[0].json.approve_min ?? 0.9);\n  const review  = Number($items(\"policy:thresholds\")[0].json.review_min  ?? 0.75);\n\n  if ($json.hard_block)     return 'Reprovado: regra dura (CPF/validade).';\n  if (score >= approve)     return `Aprovado: score ${score.toFixed(2)} ≥ ${approve}.`;\n  if (score >= review)      return `Revisão: score ${score.toFixed(2)} entre ${review} e ${approve}.`;\n  return                    `Reprovado: score ${score.toFixed(2)} < ${review}.`;\n})()\n}}",
+              "type": "string"
+            },
+            {
+              "id": "4d4dfb01-7d11-454a-98da-f7dd6eda8f2a",
+              "name": "matched_fields",
+              "value": "={{\n(() => {\n  const m = [];\n  if ($json.match_nome)      m.push('nome');\n  if ($json.match_cpf)       m.push('cpf');\n  if ($json.match_nasc)      m.push('data_nascimento');\n  if ($json.match_emissao)   m.push('data_emissao');\n  if ($json.match_validade)  m.push('data_validade');\n  if ($json.match_categoria) m.push('categoria');\n  if ($json.match_tipo_hab)  m.push('tipo_hab');\n  return m;\n})()\n}}",
+              "type": "array"
+            },
+            {
+              "id": "1c5978ef-5a99-48ef-aa59-3cebe8a7f243",
+              "name": "mismatches",
+              "value": "={{\n(() => {\n  const mm = [];\n  if (!$json.match_nome)      mm.push('nome');\n  if (!$json.match_cpf)       mm.push('cpf');\n  if (!$json.match_nasc)      mm.push('data_nascimento');\n  if (!$json.match_emissao)   mm.push('data_emissao');\n  if (!$json.match_validade)  mm.push('data_validade');\n  if (!$json.match_categoria) mm.push('categoria');\n  if (!$json.match_tipo_hab)  mm.push('tipo_hab');\n  return mm;\n})()\n}}",
+              "type": "array"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4128,
+        -672
+      ],
+      "id": "e0c3d58f-a9b4-44a4-8079-e92dd575a1ce",
+      "name": "decide:status"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "708e7989-3fb2-40c0-a924-04dd1492642c",
+              "name": "status",
+              "value": "={{ $items(\"decide:status\")[0].json.status }}",
+              "type": "string"
+            },
+            {
+              "id": "972dc99d-98a6-4339-80f0-dbbfd0a0ee9d",
+              "name": "score",
+              "value": "={{ Number($items(\"calc:score\")[0].json.score_final ?? 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "17e5596e-c8ce-4ea7-9731-2dd439a4f32d",
+              "name": "score_threshold",
+              "value": "={{ Number($items(\"policy:thresholds\")[0].json.approve_min ?? 0.9) }}",
+              "type": "number"
+            },
+            {
+              "id": "5be63c85-783d-4e4b-8ea8-cc4a3a3005cf",
+              "name": "=score_status",
+              "value": "={{ $items(\"decide:status\")[0].json.status }}",
+              "type": "string"
+            },
+            {
+              "id": "0729b3d9-9948-4825-af6b-66d234979641",
+              "name": "matched_fields",
+              "value": "={{ $items(\"decide:status\")[0].json.matched_fields }}",
+              "type": "array"
+            },
+            {
+              "id": "af19de1d-719f-4d97-90f2-e26559bcbf8a",
+              "name": "mismatches",
+              "value": "={{ $items(\"decide:status\")[0].json.mismatches }}",
+              "type": "array"
+            },
+            {
+              "id": "50955585-7bd8-4b43-98be-25bc742c2ec5",
+              "name": "reason",
+              "value": "={{ $items(\"decide:status\")[0].json.status_reason }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4336,
+        -672
+      ],
+      "id": "b1a5dd3b-8654-4903-a798-ae74be19c326",
+      "name": "build:response"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "FFPbvBIfk8bsnIDU",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/FFPbvBIfk8bsnIDU",
+          "cachedResultName": "sub/get-jwt"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {}
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        832,
+        -704
+      ],
+      "id": "51609241-c00a-47db-896f-8d4a7e3cdab0",
+      "name": "auth:idp-jwt"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "FFPbvBIfk8bsnIDU",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/FFPbvBIfk8bsnIDU",
+          "cachedResultName": "sub/get-jwt"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {}
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        832,
+        -512
+      ],
+      "id": "fd10856c-4b1c-4bea-8da4-76d4e3a5ebea",
+      "name": "auth:vio-jwt"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6293855d-844b-4b0b-b099-e0fb41a27142",
+              "name": "jwt",
+              "value": "={{ $json.jwt }}",
+              "type": "string"
+            },
+            {
+              "id": "515eebc8-5432-4901-aa88-f7cb338263ce",
+              "name": "authHeader",
+              "value": "={{ \"Bearer \" + $json.jwt }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1008,
+        -704
+      ],
+      "id": "de9698dc-e698-44d2-848a-92fe7d63524c",
+      "name": "ctx:attach-jwt-idp"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "98b2a74a-044a-42fc-9fc6-f6798b23247f",
+              "name": "jwt",
+              "value": "={{ $json.jwt }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1008,
+        -512
+      ],
+      "id": "64048b1e-dafd-4d0a-94dd-2f4910f1143a",
+      "name": "ctx:attach-jwt-vio"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bdbfeb1b-fc7a-426f-b6cb-17f21c2f3da7",
+              "name": "cpf_idp",
+              "value": "={{$json.idp.result[0].fields.find(f => f.stdName === 'cpf' || f.name==='cpf')?.value?.replace(/\\D/g,'')}}",
+              "type": "string"
+            },
+            {
+              "id": "503f1414-6567-422c-a451-c78c3d2edd93",
+              "name": "nome_idp",
+              "value": "={{$json.idp.result[0].fields.find(f => f.stdName === 'name' || f.name==='nome')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "596a1048-dd11-4128-bf53-7d678ed2a90c",
+              "name": "nasc_idp",
+              "value": "={{$json.idp.result[0].fields.find(f => f.stdName === 'birth_date' || f.name==='data_nascimento')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "9cd8f4a2-af69-4f90-92b6-da9a943100a0",
+              "name": "=emissao_idp",
+              "value": "={{$json.idp.result[0].fields.find(f => f.stdName === 'issue_date' || f.name==='data_emissao')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "45b54220-ff07-4e47-9ef2-ee356b9ce5d7",
+              "name": "validade_idp",
+              "value": "={{$json.idp.result[0].fields.find(f => f.stdName === 'expiry_date' || f.name==='data_validade')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "1e881cb7-34ca-4149-96de-d8c0265fece8",
+              "name": "categoria_idp",
+              "value": "={{$json.idp.result[0].fields.find(f => f.stdName === 'license_category' || f.name==='cat_hab')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "c7cd19c2-9328-48a3-b74a-ecb997d20250",
+              "name": "tipo_hab_idp",
+              "value": "={{$json.idp.result[0].fields.find(f => f.stdName === 'license_type' || f.name==='tipo_habilitacao')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "17044e06-dcbb-4927-937a-f0c2f4c5e1b2",
+              "name": "birth_place_idp",
+              "value": "={{$json.idp.result[0].fields.find(f => f.stdName === 'birth_place' || f.name==='local_nascimento')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "11b1e2cb-0dd2-4130-ace4-3b3fef20d903",
+              "name": "nationality_idp",
+              "value": "={{$json.idp.result[0].fields.find(f => f.stdName === 'nationality' || f.name==='nacionalidade')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "847cebf0-b983-469b-8756-c62eed965ac6",
+              "name": "father_name_idp",
+              "value": "={{$json.idp.result[0].fields.find(f => f.stdName === 'affiliation_2' || f.name==='filiacao_2')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "651f414b-8b97-419a-8302-162688ad57c0",
+              "name": "mother_name_idp",
+              "value": "={{$json.idp.result[0].fields.find(f => f.stdName === 'affiliation_1' || f.name==='filiacao_1')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "9ed9baee-9794-4549-8eb5-a72ee7636b17",
+              "name": "status_code",
+              "value": "={{ $json.idp.status.code }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1936,
+        -864
+      ],
+      "id": "4cab72a7-daf4-42c9-916e-8edc7f649129",
+      "name": "normalize-idp"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a8be798-ba34-49ff-ab2a-8e9ca5ed5421",
+              "name": "cpf_vio",
+              "value": "={{$json.vio.result[0].fields.find(f => f.name==='cpf')?.value?.replace(/\\D/g,'')}}",
+              "type": "string"
+            },
+            {
+              "id": "956b3a3d-2ad5-4ad9-a767-1a2a1faed1b0",
+              "name": "=nome_vio",
+              "value": "={{$json.vio.result[0].fields.find(f => f.name==='nome')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "afe1b30b-cbad-4ce8-b0bd-8fa3ca946a34",
+              "name": "nasc_vio",
+              "value": "={{$json.vio.result[0].fields.find(f => f.name==='data_nascimento')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "d919d4de-5960-4c4c-af50-9f1a23233922",
+              "name": "emissao_vio",
+              "value": "={{$json.vio.result[0].fields.find(f => f.name==='data_emissao')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "b6ade453-7edb-4844-a8a2-1a2d6fb6bef1",
+              "name": "validade_vio",
+              "value": "={{$json.vio.result[0].fields.find(f => f.name==='data_validade')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "e9d48d6f-8a17-4763-8c83-6bda80d0114d",
+              "name": "categoria_vio",
+              "value": "={{$json.vio.result[0].fields.find(f => f.name==='cat_hab')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "30fbb964-bd55-4109-92e2-46a707d3e974",
+              "name": "tipo_hab_vio",
+              "value": "={{$json.vio.result[0].fields.find(f => f.name==='tipo_habilitacao')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "a4131108-9d65-4bc5-9534-cb7a6ab01f4e",
+              "name": "mother_name_vio",
+              "value": "={{$json.vio.result[0].fields.find(f => f.name==='filiacao_1')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "95445c0f-2821-4bde-a480-be34ae3cd0a6",
+              "name": "father_name_vio",
+              "value": "={{$json.vio.result[0].fields.find(f => f.name==='filiacao_2')?.value}}",
+              "type": "string"
+            },
+            {
+              "id": "762657d7-91b3-4761-be98-ea539cb557d3",
+              "name": "birth_place_vio",
+              "value": "={{ $json.vio.result[0].fields[10].value }}/{{ $json.vio.result[0].fields[11].value }}",
+              "type": "string"
+            },
+            {
+              "id": "aabc3a01-0b3e-4e92-a2c7-aa92f5bf821b",
+              "name": "status_code",
+              "value": "={{ $json.vio.status.code }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1936,
+        -528
+      ],
+      "id": "95981a56-3429-491f-8943-70d8e5c47dec",
+      "name": "normalize-vio"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "includeUnpaired": false
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2656,
+        -688
+      ],
+      "id": "c4bdb5d3-ac63-427f-a647-ea1165fce2d7",
+      "name": "merge:sources"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8a305a8c-7f7a-4ac8-aed3-a45012eec8e4",
+              "leftValue": "={{ (() => {   const b = $json;                            const status = Number(b.statusCode ?? b.status?.code ?? b.code ?? 0);   const okStatus = status ? status === 200 : true;   const res    = (b.result ?? b.idp?.result) || [];   const fields = res[0]?.fields || [];   return okStatus && Array.isArray(fields) && fields.length > 0; })() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1408,
+        -704
+      ],
+      "id": "baa41057-6450-4094-9b7c-4164830c3c6a",
+      "name": "idp-ok?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d57a7fbd-b75d-4160-9ba2-7eade4aace44",
+              "name": "response_code",
+              "value": 503,
+              "type": "number"
+            },
+            {
+              "id": "102700da-5a92-47d5-b26d-f1be8df3401b",
+              "name": "response_body",
+              "value": "={{\n  {\n    error: 'Não foi possível extrair os dados do documento (IDP).',\n    details: [\n      { code: 'idp_extract_failed', msg: 'O provedor não retornou campos.' }\n    ]\n  }\n}}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1680,
+        -688
+      ],
+      "id": "5d9e4f2d-d977-403d-a492-c9f90ddcc57d",
+      "name": "build:idp-extract-error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c2a68215-aa2f-49f1-bec8-29f3322ca1f9",
+              "leftValue": "={{\n(() => {\n  const b = $json;\n  const status = Number(b.statusCode ?? b.status?.code ?? b.code ?? 0);\n  const okStatus = status ? status === 200 : true;\n  const res    = (b.result ?? b.vio?.result) || [];\n  const fields = res[0]?.fields || [];\n  return okStatus && Array.isArray(fields) && fields.length > 0;\n})()\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1408,
+        -512
+      ],
+      "id": "90424a4e-cc43-4571-9113-3121acbc4bde",
+      "name": "vio-ok?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ab51c9ab-c42a-4c45-9a17-ad0785f56e66",
+              "name": "response_code",
+              "value": 503,
+              "type": "number"
+            },
+            {
+              "id": "dabf0dc8-0f31-4b08-aa7c-8c6b2e92f4b7",
+              "name": "response_code",
+              "value": "={{\n  {\n    error: 'Não foi possível extrair os dados do documento (VIO).',\n    details: [\n      { code: 'vio_extract_failed', msg: 'O provedor não retornou campos.' }\n    ]\n  }\n}}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1680,
+        -352
+      ],
+      "id": "3dc593ab-0154-4036-b420-cbbd58028650",
+      "name": "build:vio-extract-error"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.response_body }}",
+        "options": {
+          "responseCode": "={{ $json.response_code }}"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1936,
+        -688
+      ],
+      "id": "ef88a8df-cf77-4a25-8404-d3bbeda1821d",
+      "name": "respond:idp-extract-error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d5ef4367-77ba-4c1c-9635-2fd5b42d7d40",
+              "leftValue": "={{ $json.status_code }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "a53f3180-9e0b-45a1-a20e-ad5fc23b92ca",
+              "leftValue": "={{ $json.status_code }}",
+              "rightValue": 300,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2160,
+        -864
+      ],
+      "id": "287bc3b4-a699-4764-9d67-2c62a32960ea",
+      "name": "validate:idp"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e3fefb98-504b-4c68-8db3-c04eff13989e",
+              "name": "response_code",
+              "value": 422,
+              "type": "number"
+            },
+            {
+              "id": "d3f9ef48-a557-4f74-95c9-8032bcf2d2ef",
+              "name": "response_body",
+              "value": "={{\n  {\n    error: 'Os dados extraídos do documento (IDP) não passaram na validação.',\n    details: [\n      { code: 'invalid_cpf_or_dates', msg: 'Verifique CPF, datas (nascimento, emissão, validade) e categoria/tipo.' }\n    ]\n  }\n}}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2448,
+        -928
+      ],
+      "id": "3796da96-4e00-4f6f-8a1b-70fa24b21a4a",
+      "name": "build:idp-validate-error"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.response_body }}",
+        "options": {
+          "responseCode": "={{ $json.response_code }}"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2656,
+        -928
+      ],
+      "id": "64d6bf83-799b-45df-8f17-bcd6018585ce",
+      "name": "respond:idp-validate-error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7b5f3bbb-fbe6-43c5-a9ae-22795683efd4",
+              "leftValue": "={{ $json.status_code }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "cc2f7e89-8977-40ae-a270-f045e966ba74",
+              "leftValue": "={{ $json.status_code }}",
+              "rightValue": 300,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2144,
+        -528
+      ],
+      "id": "a7bb2ab5-90ce-4791-b98c-8f3db239e550",
+      "name": "validate:vio"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1f1f7e70-80f8-4778-8791-46fc4f2641b7",
+              "name": "response_code",
+              "value": 422,
+              "type": "number"
+            },
+            {
+              "id": "dd15751b-9a6a-4348-b2dc-7738e9cf67f9",
+              "name": "response_body",
+              "value": "={{\n(() => {\n  const em = $json.emissao_vio ?? '';\n  const va = $json.validade_vio ?? '';\n  const rx = /^\\d{4}-\\d{2}-\\d{2}$/;\n  const reasons = [];\n\n  // presença + formato\n  if (!em) reasons.push({ field: 'data_emissao',  code: 'missing',         msg: 'Data de emissão ausente.' });\n  else if (!rx.test(em)) reasons.push({ field: 'data_emissao',  code: 'invalid_format',  msg: 'Formato inválido: use AAAA-MM-DD.' });\n\n  if (!va) reasons.push({ field: 'data_validade', code: 'missing',         msg: 'Data de validade ausente.' });\n  else if (!rx.test(va)) reasons.push({ field: 'data_validade', code: 'invalid_format',  msg: 'Formato inválido: use AAAA-MM-DD.' });\n\n  // regras temporais (só compara se os dois formatos estão ok)\n  const toDate = s => new Date(s + 'T00:00:00Z');\n  if (rx.test(em) && rx.test(va)) {\n    const de  = toDate(em);\n    const dv  = toDate(va);\n    const now = new Date();\n\n    if (de > now) reasons.push({ field: 'data_emissao',  code: 'after_today',      msg: 'Data de emissão no futuro.' });\n    if (dv < de)  reasons.push({ field: 'data_validade', code: 'before_emission',  msg: 'Validade anterior à emissão.' });\n  }\n\n  // fallback genérico se nada foi classificado (deve ser raro)\n  if (!reasons.length) {\n    reasons.push({ field: 'vio', code: 'validation_failed', msg: 'Os dados do VIO não passaram na validação.' });\n  }\n\n  return {\n    error: 'Os dados do VIO não passaram na validação.',\n    details: {\n      reasons,\n      vio_snapshot: {\n        emissao_vio: em || null,\n        validade_vio: va || null,\n      }\n    }\n  };\n})()\n}}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2448,
+        -432
+      ],
+      "id": "1897d649-1ec8-47e6-8623-4c9f7079095a",
+      "name": "build:vio-validate-error"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.response_body }}",
+        "options": {
+          "responseCode": "={{ $json.response_code }}"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2656,
+        -432
+      ],
+      "id": "ea60e71d-25ee-44e8-8b7b-5e2f03019051",
+      "name": "respond:vio-validate-error"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "17d68327-ed46-478a-bd4e-dfef4842798b",
+              "name": "=approve_min",
+              "value": 0.9,
+              "type": "number"
+            },
+            {
+              "id": "90786874-d69b-46b3-8728-23684c31f87a",
+              "name": "=review_min",
+              "value": 0.75,
+              "type": "number"
+            },
+            {
+              "id": "861fd08b-c68c-41b5-bffd-5d31c8026dd4",
+              "name": "score_threshold",
+              "value": 0.85,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3072,
+        -688
+      ],
+      "id": "dd1ade54-c768-48fa-a991-3f8fef37dee7",
+      "name": "config:scoring"
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "output": "={{\n(() => {\n  const s = ($items(\"build:response\")[0].json.status || '').toLowerCase();\n  return s === 'match' ? 0 : s === 'review' ? 1 : s === 'fail' ? 2 : 3;\n})()\n}}"
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        4576,
+        -704
+      ],
+      "id": "dec11c2c-4367-4fe4-b625-04fc2c8cbda0",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "=Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        5184,
+        -432
+      ],
+      "id": "78b7a596-503b-4879-bc3c-99dc457293ce",
+      "name": "application/json3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c02d9cef-c570-494b-a5c3-c75107389d6b",
+              "name": "status",
+              "value": "={{ $json.status || 'review' }}",
+              "type": "string"
+            },
+            {
+              "id": "f6fc4ee2-60c6-4c3b-83d9-69ebddbc6ef9",
+              "name": "score",
+              "value": "={{ Number($json.score ?? 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "73d2ba45-95a1-40df-81d9-be6a49b66696",
+              "name": "score_threshold",
+              "value": "={{ Number($json.score_threshold ?? 0.9) }}",
+              "type": "number"
+            },
+            {
+              "id": "fe962432-2194-4843-ad76-be6687dc9bd8",
+              "name": "=matched_fields",
+              "value": "={{ $json.matched_fields || [] }}",
+              "type": "array"
+            },
+            {
+              "id": "faa10c69-39cd-4800-8113-f97673533c60",
+              "name": "=mismatches",
+              "value": "={{ $json.mismatches || [] }}",
+              "type": "array"
+            },
+            {
+              "id": "580242d3-1b4c-44c8-96fe-52acf4ae2a3e",
+              "name": "reason",
+              "value": "={{ $json.status_reason || 'Revisão manual necessária.' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4976,
+        -784
+      ],
+      "id": "4934d760-d236-4982-bd7d-b8fa66fe6680",
+      "name": "build:review-response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c02d9cef-c570-494b-a5c3-c75107389d6b",
+              "name": "status",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            },
+            {
+              "id": "580242d3-1b4c-44c8-96fe-52acf4ae2a3e",
+              "name": "reason",
+              "value": "={{ $json.status_reason || 'Aprovado.' }}",
+              "type": "string"
+            },
+            {
+              "id": "3704fb3f-af05-4cc3-9028-a05e244c0766",
+              "name": "person",
+              "value": "={{\n(() => {\n  const src = $items(\"merge:sources\")[0]?.json ?? {};\n\n  const pick = (...vals) =>\n    vals.find(v => v !== undefined && v !== null && String(v).trim() !== '') ?? '';\n\n  const fmtDate = (v) => {\n    const s = String(v || '').trim();\n    if (!s) return '';\n    const iso10 = s.slice(0, 10);\n\n    let y, m, d;\n    if (/^\\d{4}-\\d{2}-\\d{2}$/.test(iso10)) {        // 2025-10-16\n      [y, m, d] = iso10.split('-');\n    } else if (/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(s)) {    // 16/10/2025\n      [d, m, y] = s.split('/');\n    } else if (/^\\d{2}-\\d{2}-\\d{4}$/.test(s)) {      // 16-10-2025\n      [d, m, y] = s.split('-');\n    } else {\n      return s; // formato desconhecido, devolve cru\n    }\n    return `${d}/${m}/${y}`;\n  };\n\n  const fmtCPF = (v) => {\n    const only = String(v || '').replace(/\\D/g, '').padStart(11, '0').slice(-11);\n    if (!only || only.length !== 11) return '';\n    return `${only.slice(0,3)}.${only.slice(3,6)}.${only.slice(6,9)}-${only.slice(9)}`;\n  };\n\n  return {\n    name:         pick(src.nome_idp,        src.nome_vio),\n    cpf:          fmtCPF(pick(src.cpf_idp,  src.cpf_vio)),\n    mother_name:  pick(\n                    src.mother_name_idp, src.nome_mae_idp, src.mae_idp, src.filiacao_mae_idp,\n                    src.mother_name_vio, src.nome_mae_vio, src.mae_vio\n                  ),\n    father_name:  pick(\n                    src.father_name_idp, src.nome_pai_idp, src.pai_idp, src.filiacao_pai_idp,\n                    src.father_name_vio, src.nome_pai_vio, src.pai_vio\n                  ),\n    birth_place:  pick(\n                    src.birth_place_idp, src.naturalidade_idp, src.local_nasc_idp, src.local_nascimento_idp, src.municipio_nasc_idp, src.uf_nasc_idp,\n                    src.birth_place_vio, src.naturalidade_vio, src.local_nasc_vio, src.local_nascimento_vio, src.municipio_nasc_vio, src.uf_nasc_vio\n                  ),\n    birth_date:   fmtDate(pick(src.nasc_idp,     src.nasc_vio)),\n    issue_date:   fmtDate(pick(src.emissao_idp,  src.emissao_vio)),\n    expiry_date:  fmtDate(pick(src.validade_idp, src.validade_vio)),\n    category:     pick(src.categoria_idp,  src.categoria_vio),\n    license_type: pick(src.tipo_hab_idp,   src.tipo_hab_vio),\n    source_hint:  src.nome_idp ? 'idp' : (src.nome_vio ? 'vio' : 'unknown')\n  };\n})()\n}}",
+              "type": "object"
+            },
+            {
+              "id": "f6fc4ee2-60c6-4c3b-83d9-69ebddbc6ef9",
+              "name": "score",
+              "value": "={{ Number($json.score ?? 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "73d2ba45-95a1-40df-81d9-be6a49b66696",
+              "name": "score_threshold",
+              "value": "={{ Number($json.score_threshold ?? 0.9) }}",
+              "type": "number"
+            },
+            {
+              "id": "fe962432-2194-4843-ad76-be6687dc9bd8",
+              "name": "=matched_fields",
+              "value": "={{ $json.matched_fields || [] }}",
+              "type": "array"
+            },
+            {
+              "id": "faa10c69-39cd-4800-8113-f97673533c60",
+              "name": "=mismatches",
+              "value": "={{ $json.mismatches || [] }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4976,
+        -960
+      ],
+      "id": "23631e4f-de64-421d-83b6-f4862cb44e7a",
+      "name": "build:success-response"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "=Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        5184,
+        -960
+      ],
+      "id": "07931338-ba05-4f81-adfd-4b4d44932280",
+      "name": "respond:success"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c02d9cef-c570-494b-a5c3-c75107389d6b",
+              "name": "status",
+              "value": "={{ $json.status || 'fail' }}",
+              "type": "string"
+            },
+            {
+              "id": "f6fc4ee2-60c6-4c3b-83d9-69ebddbc6ef9",
+              "name": "score",
+              "value": "={{ Number($json.score ?? 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "73d2ba45-95a1-40df-81d9-be6a49b66696",
+              "name": "score_threshold",
+              "value": "={{ Number($json.score_threshold ?? 0.9) }}",
+              "type": "number"
+            },
+            {
+              "id": "fe962432-2194-4843-ad76-be6687dc9bd8",
+              "name": "=matched_fields",
+              "value": "={{ $json.matched_fields || [] }}",
+              "type": "array"
+            },
+            {
+              "id": "faa10c69-39cd-4800-8113-f97673533c60",
+              "name": "=mismatches",
+              "value": "={{ $json.mismatches || [] }}",
+              "type": "array"
+            },
+            {
+              "id": "580242d3-1b4c-44c8-96fe-52acf4ae2a3e",
+              "name": "reason",
+              "value": "={{ $json.status_reason || 'Dados divergentes. Verifique os campos informados.' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4976,
+        -608
+      ],
+      "id": "7bc80633-4fd9-4159-8427-16a2dcadbcd9",
+      "name": "build:fail-response"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 422,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "=Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        5184,
+        -608
+      ],
+      "id": "cc508740-2238-4d81-a583-e5bbbbdc5916",
+      "name": "respond:fail"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 202,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "=Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        5184,
+        -784
+      ],
+      "id": "d221d074-bf9e-4a4d-a8eb-f087c2ddf719",
+      "name": "respond:review"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c02d9cef-c570-494b-a5c3-c75107389d6b",
+              "name": "status",
+              "value": "'ERROR'",
+              "type": "string"
+            },
+            {
+              "id": "fe962432-2194-4843-ad76-be6687dc9bd8",
+              "name": "=error",
+              "value": "'Estado de decisão desconhecido ou incorreto.'",
+              "type": "string"
+            },
+            {
+              "id": "84ee29ad-08be-4dd8-8fc6-9b9079a58c60",
+              "name": "=status_raw",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            },
+            {
+              "id": "f6fc4ee2-60c6-4c3b-83d9-69ebddbc6ef9",
+              "name": "score",
+              "value": "={{ Number($json.score ?? 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "580242d3-1b4c-44c8-96fe-52acf4ae2a3e",
+              "name": "reason",
+              "value": "={{ $json.status_reason || 'Conteúdo inesperado. Acione o suporte.' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4976,
+        -432
+      ],
+      "id": "6b3f59ad-79d8-464c-b327-d1948b943352",
+      "name": "build:unknown-response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1fb755e8-dd54-4d19-92f6-a3282ed4af9b",
+              "name": "approve_min",
+              "value": 0.9,
+              "type": "number"
+            },
+            {
+              "id": "3c86a286-74cd-4ec0-aa1e-af71da701ce4",
+              "name": "review_min",
+              "value": 0.75,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3488,
+        -688
+      ],
+      "id": "c721ce0e-edd8-4c35-b5ca-6fbe18e079a3",
+      "name": "policy:thresholds"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "111187bb-cc90-47a4-95c1-4be912db87fa",
+              "name": "hard_block",
+              "value": "={{ !$json.match_cpf || !$json.match_validade }}",
+              "type": "boolean"
+            },
+            {
+              "id": "cbd05993-6dba-4993-99a5-999c8339bccc",
+              "name": "hard_reasons",
+              "value": "={{\n  (() => {\n    const reasons = [];\n    if (!$json.match_cpf) reasons.push({ field: 'cpf', msg: 'CPF divergente.' });\n    if (!$json.match_validade) reasons.push({ field: 'data_validade', msg: 'Validade divergente.' });\n    // opcional: documento vencido\n    const exp = $json.validade_idp ?? $json.validade_vio;\n    if (exp && new Date(exp) < new Date()) {\n      reasons.push({ field: 'data_validade', msg: 'Documento vencido.' });\n    }\n    return reasons;\n  })()\n}}",
+              "type": "array"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3696,
+        -688
+      ],
+      "id": "b9317895-95ab-4096-b54e-538d3c0a1b6c",
+      "name": "hard:checks"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4e3e63ea-e074-4c82-8da0-3615dc956039",
+              "leftValue": "={{$json.hard_block}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3904,
+        -688
+      ],
+      "id": "4d5951fa-0171-4712-a126-95b37597f30e",
+      "name": "route:hard"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1858fc2c-3d93-43da-9cae-8b2508f0f634",
+              "name": "status",
+              "value": "fail",
+              "type": "string"
+            },
+            {
+              "id": "a71e87b0-8b4e-4b79-b351-3ebb47fe274e",
+              "name": "reason",
+              "value": "Reprovado por regra dura. CPF inválido ou documento vencido.",
+              "type": "string"
+            },
+            {
+              "id": "6e11587e-c93b-432a-ac5b-dade61074c31",
+              "name": "details",
+              "value": "={{$json.hard_reasons}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4128,
+        -864
+      ],
+      "id": "b44beb2b-03ad-4923-a835-9809936136f3",
+      "name": "hard:fail-response"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json.response_body}}",
+        "options": {
+          "responseCode": "={{$json.response_code}}"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        4336,
+        -864
+      ],
+      "id": "af894a8c-2012-46d4-8743-43e6a06b7dcb",
+      "name": "respond:hard-fail"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.response_body }}",
+        "options": {
+          "responseCode": "={{ $json.response_code }}"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1936,
+        -352
+      ],
+      "id": "5e3a0bf2-e25f-4bd1-b52b-0ba53ad5fcbc",
+      "name": "respond:vio-extract-error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b0f6a16c-6faf-4851-9dd8-6218617dd888",
+              "leftValue": "={{ !!$json.frontUrl && ($json.frontUrl.trim().startsWith('http://') || $json.frontUrl.trim().startsWith('https://')) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f69f8ff4-6776-4d97-a38a-c936c58fc83e",
+              "leftValue": "={{ !!$json.backUrl && ($json.backUrl.trim().startsWith('http://') || $json.backUrl.trim().startsWith('https://')) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "78f5244f-ff0f-4e12-afba-8adb11a7e7a4",
+              "leftValue": "={{ $json.frontUrl.trim() !== $json.backUrl.trim() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -944,
+        288
+      ],
+      "id": "a16589ff-99d1-4b86-ba0c-9019886ec522",
+      "name": "guard-input"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a4ccd0b8-9e2e-4300-b4cd-1ea22983102c",
+              "name": "frontUrl",
+              "value": "={{ \n  ($json.imgFrontUrl || $json.frontUrl || $json.body?.frontUrl || $json.body2?.frontUrl || '')\n    .trim()\n}}",
+              "type": "string"
+            },
+            {
+              "id": "b5a2e155-6a27-4cf7-b4cc-abc5694006b6",
+              "name": "backUrl",
+              "value": "={{ \n  ($json.imgBackUrl || $json.backUrl || $json.body?.backUrl || $json.body2?.backUrl || '')\n    .trim()\n}}",
+              "type": "string"
+            },
+            {
+              "id": "fde78f2b-acf1-43d2-b054-e69544b90b0f",
+              "name": "_uuid",
+              "value": "={{ $execution.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1120,
+        288
+      ],
+      "id": "6e309164-faa5-42e2-85d7-a64fbeef3639",
+      "name": "normalize-input"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cnh-verify",
+        "responseMode": "responseNode",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1296,
+        288
+      ],
+      "id": "2478f7ed-9948-4b1e-ae24-ae1a44140ba8",
+      "name": "webhook-cnh-verify",
+      "webhookId": "2cbf2ff0-4d90-4aef-9167-d1e118d3e4aa"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "780ba938-93b3-4134-bf1a-351cb78587f7",
+              "name": "_err",
+              "value": "={{\n(() => {\n  const errors = $json.input_errors || [];\n  const front = ($json.front_url ?? '').trim();\n  const back  = ($json.back_url  ?? '').trim();\n  \n  let message = 'Erro de validação nos dados enviados.';\n  if (errors.length === 1) message = errors[0];\n  else if (errors.length > 1) message = `Foram encontrados ${errors.length} problemas.`;\n\n  return {\n    status: 'invalid_input',\n    http_status: 422,\n    message,\n    hint: 'Envie duas URLs diferentes, não vazias e válidas, uma para a frente e outra para o verso da CNH.',\n    errors,\n    context: { front_url: front, back_url: back }\n  };\n})()\n}}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -704,
+        368
+      ],
+      "id": "fd5251ba-b16e-4b83-bdd8-558f353dec0d",
+      "name": "mark-missing-urls"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.frontUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "file",
+              "outputPropertyName": "front"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -704,
+        0
+      ],
+      "id": "30cf1630-7967-4c32-9f97-7a9772783a1d",
+      "name": "download-front"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.backUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "file",
+              "outputPropertyName": "back"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -704,
+        176
+      ],
+      "id": "07607d1e-0836-478e-b95e-201dfeb0ec68",
+      "name": "download-back"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a5f60c5e-91b9-4aee-b349-976829673fea",
+              "leftValue": "={{ !!$binary.front }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "33daa0c0-85aa-4364-9e77-f2de326e1d31",
+              "leftValue": "={{ !!$binary.back }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        32,
+        80
+      ],
+      "id": "10a114e2-203e-4a05-a721-18ee51251e0d",
+      "name": "has-binaries"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a3a58e0-ceec-4162-afd9-be6fc87230b9",
+              "name": "_err",
+              "value": "download failed",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        256,
+        176
+      ],
+      "id": "82144609-c363-433c-9636-aeb355df53fa",
+      "name": "mark-download-failed"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a8b9222d-05af-4ba7-82e4-db9544526188",
+              "leftValue": "={{ $binary.front.mimeType?.startsWith('image/') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "6df23c09-e4d1-4021-84a5-18b08a40d9f0",
+              "leftValue": "={{ $binary.back.mimeType?.startsWith('image/') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        272,
+        -112
+      ],
+      "id": "433e9c13-42a4-48a8-9dad-706f54ab9aaf",
+      "name": "mime-ok"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a3a58e0-ceec-4162-afd9-be6fc87230b9",
+              "name": "_err",
+              "value": "mime invalid",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        -96
+      ],
+      "id": "28f41ab1-072e-4444-ac0e-b6034b0d481f",
+      "name": "mark-mime-invalid"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "77b28ab9-006b-43e0-986b-ec24354a2ff4",
+              "name": "status_code",
+              "value": "={{\n  (() => {\n    const map = {\n      missing_urls:   400,\n      download_failed:422,\n      mime_invalid:   415,\n      size_exceeded:  413,\n    };\n    const code = $json._err || 'invalid_input';\n    return $json.problem?.http_status ?? (map[code] ?? 422);\n  })()\n}}",
+              "type": "number"
+            },
+            {
+              "id": "1e038ae6-a974-427a-a9cd-8d041ad37ee8",
+              "name": "response_body",
+              "value": "={{\n  (() => {\n    const code = $json._err || 'invalid_input';\n    const presets = {\n      missing_urls: {\n        http: 400, status: 'bad-request',\n        message: 'Send valid and distinct imageFrontUrl and imageBackUrl.',\n        hints: [\n          'Expected fields: imageFrontUrl and imageBackUrl.',\n          'URLs must start with http and cannot be equal.'\n        ],\n      },\n      download_failed: {\n        http: 422, status: 'invalid_input',\n        message: 'Could not download images.',\n        hints: [\n          'Signed URLs expire in ~5 minutes.',\n          'Ensure the source allows public download.'\n        ],\n      },\n      mime_invalid: {\n        http: 415, status: 'invalid_input',\n        message: 'File is not an image (invalid mime).',\n        hints: ['Only image/* types are accepted.']\n      },\n      size_exceeded: {\n        http: 413, status: 'invalid_input',\n        message: 'Image too large.',\n        hints: ['Max size allowed: 5 MB.']\n      },\n      invalid_input: {\n        http: 422, status: 'invalid_input',\n        message: 'Invalid request.', hints: []\n      }\n    };\n    const p = $json.problem || {};\n    const base = presets[code] || presets.invalid_input;\n    return {\n      status:  p.status  || base.status,\n      message: p.message || base.message,\n      errors:  p.errors  || [],\n      hints:   p.hints   || base.hints,\n      context: {\n        frontUrl: $json.frontUrl || $json.body?.imageFrontUrl || null,\n        backUrl:  $json.backUrl  || $json.body?.imageBackUrl  || null\n      }\n    };\n  })()\n}}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        800,
+        -96
+      ],
+      "id": "d5fc59b6-421c-430b-af98-a3cb6760761e",
+      "name": "build:mine-bad-request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "77b28ab9-006b-43e0-986b-ec24354a2ff4",
+              "name": "status_code",
+              "value": "={{\n  (() => {\n    const map = {\n      missing_urls:   400,\n      download_failed:422,\n      mime_invalid:   415,\n      size_exceeded:  413,\n    };\n    const code = $json._err || 'invalid_input';\n    return $json.problem?.http_status ?? (map[code] ?? 422);\n  })()\n}}",
+              "type": "number"
+            },
+            {
+              "id": "1e038ae6-a974-427a-a9cd-8d041ad37ee8",
+              "name": "response_body",
+              "value": "={\n  \"ok\": false,\n  \"status\": \"invalid_urls\",\n  \"message\": \"Envie duas URLs http(s) válidas e diferentes.\",\n  \"errors\": [],\n  \"hints\": [\n    \"Links devem começar com http:// ou https://\",\n    \"Se estiver usando Drive/Dropbox, torne o arquivo público\",\n    \"As duas URLs não podem ser iguais\"\n  ],\n  \"context\": {\n    \"frontUrl\": \"={{ $json.frontUrl || null }}\",\n    \"backUrl\": \"={{ $json.backUrl || null }}\"\n  }\n}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -528,
+        368
+      ],
+      "id": "47dc4823-6ca6-47e6-a838-25219e62c52b",
+      "name": "build:missing-bad-request"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.response_body }}",
+        "options": {
+          "responseCode": "={{ $json.status_code }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -352,
+        368
+      ],
+      "id": "8cf49462-24ca-4d1c-ae63-054694918d11",
+      "name": "respond:missing-bad-request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "77b28ab9-006b-43e0-986b-ec24354a2ff4",
+              "name": "status_code",
+              "value": "={{\n  (() => {\n    const map = {\n      missing_urls:   400,\n      download_failed:422,\n      mime_invalid:   415,\n      size_exceeded:  413,\n    };\n    const code = $json._err || 'invalid_input';\n    return $json.problem?.http_status ?? (map[code] ?? 422);\n  })()\n}}",
+              "type": "number"
+            },
+            {
+              "id": "1e038ae6-a974-427a-a9cd-8d041ad37ee8",
+              "name": "response_body",
+              "value": "={{\n  (() => {\n    const code = $json._err || 'invalid_input';\n    const presets = {\n      missing_urls: {\n        http: 400, status: 'bad-request',\n        message: 'Send valid and distinct imageFrontUrl and imageBackUrl.',\n        hints: [\n          'Expected fields: imageFrontUrl and imageBackUrl.',\n          'URLs must start with http and cannot be equal.'\n        ],\n      },\n      download_failed: {\n        http: 422, status: 'invalid_input',\n        message: 'Could not download images.',\n        hints: [\n          'Signed URLs expire in ~5 minutes.',\n          'Ensure the source allows public download.'\n        ],\n      },\n      mime_invalid: {\n        http: 415, status: 'invalid_input',\n        message: 'File is not an image (invalid mime).',\n        hints: ['Only image/* types are accepted.']\n      },\n      size_exceeded: {\n        http: 413, status: 'invalid_input',\n        message: 'Image too large.',\n        hints: ['Max size allowed: 5 MB.']\n      },\n      invalid_input: {\n        http: 422, status: 'invalid_input',\n        message: 'Invalid request.', hints: []\n      }\n    };\n    const p = $json.problem || {};\n    const base = presets[code] || presets.invalid_input;\n    return {\n      status:  p.status  || base.status,\n      message: p.message || base.message,\n      errors:  p.errors  || [],\n      hints:   p.hints   || base.hints,\n      context: {\n        frontUrl: $json.frontUrl || $json.body?.imageFrontUrl || null,\n        backUrl:  $json.backUrl  || $json.body?.imageBackUrl  || null\n      }\n    };\n  })()\n}}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        496,
+        176
+      ],
+      "id": "cc9a3313-83b9-4b93-a67c-f4709d804781",
+      "name": "build:download-bad-request"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.response_body }}",
+        "options": {
+          "responseCode": "={{ $json.status_code }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        720,
+        176
+      ],
+      "id": "a706ada3-5fa6-4789-80ab-8c7c5dbc73c5",
+      "name": "respond:download-bad-request"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.response_body }}",
+        "options": {
+          "responseCode": "={{ $json.status_code }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1024,
+        -96
+      ],
+      "id": "193ef10e-084e-4a97-b136-9329cc1469b0",
+      "name": "respond:mine-bad-request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1aa46ef8-65a4-4606-a99f-5901c4180556",
+              "leftValue": "={{ $json.front_size > 0 && $json.front_size <= 5_000_000 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "38c6e355-2624-4c0c-ba3d-1a17950cbc50",
+              "leftValue": "={{ $json.back_size > 0 && $json.back_size <= 5_000_000 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        528,
+        -400
+      ],
+      "id": "290c96d7-b2fa-4d59-923c-73994d8f5f20",
+      "name": "size-ok"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a3a58e0-ceec-4162-afd9-be6fc87230b9",
+              "name": "_err",
+              "value": "size exceeded",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        -272
+      ],
+      "id": "4c8b9a46-e2a9-4977-a9e3-5a98cf3a2a48",
+      "name": "mark-size-exceeded"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "77b28ab9-006b-43e0-986b-ec24354a2ff4",
+              "name": "status_code",
+              "value": "={{\n  (() => {\n    const map = {\n      missing_urls:   400,\n      download_failed:422,\n      mime_invalid:   415,\n      size_exceeded:  413,\n    };\n    const code = $json._err || 'invalid_input';\n    return $json.problem?.http_status ?? (map[code] ?? 422);\n  })()\n}}",
+              "type": "number"
+            },
+            {
+              "id": "1e038ae6-a974-427a-a9cd-8d041ad37ee8",
+              "name": "response_body",
+              "value": "={{\n  (() => {\n    const code = $json._err || 'invalid_input';\n    const presets = {\n      missing_urls: {\n        http: 400, status: 'bad-request',\n        message: 'Send valid and distinct imageFrontUrl and imageBackUrl.',\n        hints: [\n          'Expected fields: imageFrontUrl and imageBackUrl.',\n          'URLs must start with http and cannot be equal.'\n        ],\n      },\n      download_failed: {\n        http: 422, status: 'invalid_input',\n        message: 'Could not download images.',\n        hints: [\n          'Signed URLs expire in ~5 minutes.',\n          'Ensure the source allows public download.'\n        ],\n      },\n      mime_invalid: {\n        http: 415, status: 'invalid_input',\n        message: 'File is not an image (invalid mime).',\n        hints: ['Only image/* types are accepted.']\n      },\n      size_exceeded: {\n        http: 413, status: 'invalid_input',\n        message: 'Image too large.',\n        hints: ['Max size allowed: 5 MB.']\n      },\n      invalid_input: {\n        http: 422, status: 'invalid_input',\n        message: 'Invalid request.', hints: []\n      }\n    };\n    const p = $json.problem || {};\n    const base = presets[code] || presets.invalid_input;\n    return {\n      status:  p.status  || base.status,\n      message: p.message || base.message,\n      errors:  p.errors  || [],\n      hints:   p.hints   || base.hints,\n      context: {\n        frontUrl: $json.frontUrl || $json.body?.imageFrontUrl || null,\n        backUrl:  $json.backUrl  || $json.body?.imageBackUrl  || null\n      }\n    };\n  })()\n}}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1136,
+        -272
+      ],
+      "id": "7ea2cff0-4bec-4650-ae8b-abb809f32f99",
+      "name": "build:size-bad-request"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.response_body }}",
+        "options": {
+          "responseCode": "={{ $json.status_code }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1344,
+        -272
+      ],
+      "id": "3ca188b0-53a6-482a-829e-62ed80aacb5e",
+      "name": "respond:size-bad-request"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -160,
+        80
+      ],
+      "id": "d2169cee-e499-451b-b50e-93019e59371a",
+      "name": "merge-downloads",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7ae86985-61fd-410c-a9e1-6b9d187fe938",
+              "name": "front_size",
+              "value": "={{ Number($json.headers?.['content-length'] || $json.headers?.['Content-Length'] || 0) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -496,
+        0
+      ],
+      "id": "a90a352a-0acf-4636-9986-b6d295a3c01c",
+      "name": "set-front-size"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9f58cfc6-0ae6-4ce4-b030-dfbe20626f3b",
+              "name": "back_size",
+              "value": "={{ Number($json.headers?.['content-length'] || $json.headers?.['Content-Length'] || 0) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -496,
+        176
+      ],
+      "id": "58e4d28b-f9d7-4f2d-98ff-3d5b63a11a63",
+      "name": "set-back-size"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "idp:content-extraction": {
+      "main": [
+        [
+          {
+            "node": "idp-ok?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "store:idp": {
+      "main": [
+        [
+          {
+            "node": "normalize-idp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "store:vio": {
+      "main": [
+        [
+          {
+            "node": "normalize-vio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "vio:extraction": {
+      "main": [
+        [
+          {
+            "node": "vio-ok?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "compare:fields": {
+      "main": [
+        [
+          {
+            "node": "config:scoring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calc:score": {
+      "main": [
+        [
+          {
+            "node": "policy:thresholds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "decide:status": {
+      "main": [
+        [
+          {
+            "node": "build:response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build:response": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "auth:idp-jwt": {
+      "main": [
+        [
+          {
+            "node": "ctx:attach-jwt-idp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "auth:vio-jwt": {
+      "main": [
+        [
+          {
+            "node": "ctx:attach-jwt-vio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ctx:attach-jwt-idp": {
+      "main": [
+        [
+          {
+            "node": "idp:content-extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ctx:attach-jwt-vio": {
+      "main": [
+        [
+          {
+            "node": "vio:extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "normalize-idp": {
+      "main": [
+        [
+          {
+            "node": "validate:idp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "normalize-vio": {
+      "main": [
+        [
+          {
+            "node": "validate:vio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "merge:sources": {
+      "main": [
+        [
+          {
+            "node": "compare:fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "idp-ok?": {
+      "main": [
+        [
+          {
+            "node": "store:idp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "build:idp-extract-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build:idp-extract-error": {
+      "main": [
+        [
+          {
+            "node": "respond:idp-extract-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "vio-ok?": {
+      "main": [
+        [
+          {
+            "node": "store:vio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "build:vio-extract-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build:vio-extract-error": {
+      "main": [
+        [
+          {
+            "node": "respond:vio-extract-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "validate:idp": {
+      "main": [
+        [
+          {
+            "node": "merge:sources",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "build:idp-validate-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build:idp-validate-error": {
+      "main": [
+        [
+          {
+            "node": "respond:idp-validate-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "validate:vio": {
+      "main": [
+        [
+          {
+            "node": "merge:sources",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "build:vio-validate-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build:vio-validate-error": {
+      "main": [
+        [
+          {
+            "node": "respond:vio-validate-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "config:scoring": {
+      "main": [
+        [
+          {
+            "node": "calc:score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "build:success-response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "build:review-response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "build:fail-response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "build:unknown-response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build:review-response": {
+      "main": [
+        [
+          {
+            "node": "respond:review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build:success-response": {
+      "main": [
+        [
+          {
+            "node": "respond:success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build:fail-response": {
+      "main": [
+        [
+          {
+            "node": "respond:fail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build:unknown-response": {
+      "main": [
+        [
+          {
+            "node": "application/json3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "policy:thresholds": {
+      "main": [
+        [
+          {
+            "node": "hard:checks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "hard:checks": {
+      "main": [
+        [
+          {
+            "node": "route:hard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "route:hard": {
+      "main": [
+        [
+          {
+            "node": "hard:fail-response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "decide:status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "hard:fail-response": {
+      "main": [
+        [
+          {
+            "node": "respond:hard-fail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "guard-input": {
+      "main": [
+        [
+          {
+            "node": "download-front",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "download-back",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "mark-missing-urls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "normalize-input": {
+      "main": [
+        [
+          {
+            "node": "guard-input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "webhook-cnh-verify": {
+      "main": [
+        [
+          {
+            "node": "normalize-input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mark-missing-urls": {
+      "main": [
+        [
+          {
+            "node": "build:missing-bad-request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "download-front": {
+      "main": [
+        [
+          {
+            "node": "set-front-size",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "download-back": {
+      "main": [
+        [
+          {
+            "node": "set-back-size",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "has-binaries": {
+      "main": [
+        [
+          {
+            "node": "mime-ok",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "mark-download-failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mark-download-failed": {
+      "main": [
+        [
+          {
+            "node": "build:download-bad-request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mime-ok": {
+      "main": [
+        [
+          {
+            "node": "size-ok",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "mark-mime-invalid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mark-mime-invalid": {
+      "main": [
+        [
+          {
+            "node": "build:mine-bad-request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build:mine-bad-request": {
+      "main": [
+        [
+          {
+            "node": "respond:mine-bad-request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build:missing-bad-request": {
+      "main": [
+        [
+          {
+            "node": "respond:missing-bad-request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build:download-bad-request": {
+      "main": [
+        [
+          {
+            "node": "respond:download-bad-request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "size-ok": {
+      "main": [
+        [
+          {
+            "node": "auth:idp-jwt",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "auth:vio-jwt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "mark-size-exceeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mark-size-exceeded": {
+      "main": [
+        [
+          {
+            "node": "build:size-bad-request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build:size-bad-request": {
+      "main": [
+        [
+          {
+            "node": "respond:size-bad-request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "merge-downloads": {
+      "main": [
+        [
+          {
+            "node": "has-binaries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set-front-size": {
+      "main": [
+        [
+          {
+            "node": "merge-downloads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set-back-size": {
+      "main": [
+        [
+          {
+            "node": "merge-downloads",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "81314d69-266c-45da-afe7-a3180044db6d",
+  "meta": {
+    "instanceId": "e81e5b6bd192ee947537b71671c433cd9cf6252203ad05248874bdfbb611bb5f"
+  },
+  "id": "EN3dFqnRed45ugbg",
+  "tags": []
+}

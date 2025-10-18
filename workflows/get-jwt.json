@@ -1,0 +1,101 @@
+{
+  "name": "get-jwt",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b80917ce-0756-4d2c-b1b7-755ad32a6a60",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mostqiapi.com/user/authenticate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"token\": \"{{ $vars.MOSTQI_CLIENT_KEY }}\" }\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "afef8d44-1164-43bb-9d1a-3d08d9653c38",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ee644f20-b60d-49ea-878b-7ec0e59c1457",
+              "name": "jwt",
+              "value": "={{ $json.jwt || $json.token || $json.bearer }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "35f6e054-b126-4e15-ac17-8aebf22d0a7a",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6c44a8d2-5faf-4891-9b6b-734768da15d9",
+  "meta": {
+    "instanceId": "e81e5b6bd192ee947537b71671c433cd9cf6252203ad05248874bdfbb611bb5f"
+  },
+  "id": "FFPbvBIfk8bsnIDU",
+  "tags": []
+}

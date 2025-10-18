@@ -1,0 +1,825 @@
+{
+  "name": "validation-cnh-ui",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Validação de Documento CNH",
+        "formDescription": "Bem-vindo(a). Ao clicar em começar, você será encaminhado(a) para uma seção onde você enviará a frente e o verso (Qrcode) de uma CNH válida.",
+        "formFields": {
+          "values": [
+            {
+              "fieldType": "html",
+              "elementName": "hero_intro_html",
+              "html": "<div style=\"text-align:center;margin:12px 0;\">\n  <p style=\"margin:0;\">Separe sua CNH e, na próxima etapa, envie <strong>frente</strong> e <strong>verso</strong>.</p>\n</div>"
+            },
+            {
+              "fieldType": "html",
+              "elementName": "help_notes_html",
+              "html": "<ul style=\"margin:8px 0 0 18px;line-height:1.5;\">\n  <li>Use foto nítida, sem reflexos.</li>\n  <li>Formatos aceitos: JPG ou PNG.</li>\n  <li>No celular, você poderá tirar a foto na próxima etapa.</li>\n</ul>"
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "buttonLabel": "Começar",
+          "path": "validar-cnh"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        32,
+        16
+      ],
+      "id": "59bcc862-f724-4bb8-8443-5d867449c56c",
+      "name": "trigger:cnh-form",
+      "webhookId": "bd8eb1bd-2a90-43f8-bb93-53c4c8039d76"
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Frente CNH",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": "image/jpg, image/jpeg, image/png",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Verso CNH (Qrcode)",
+              "fieldType": "file",
+              "acceptFileTypes": "image/jpg, image/jpeg, image/png",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "buttonLabel": "Validar CNH"
+        }
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        272,
+        16
+      ],
+      "id": "40fba3b0-4c0c-4510-8da7-65b74ac4e579",
+      "name": "ui:upload-form",
+      "webhookId": "53ac4c3c-771a-49a2-95ac-08cf90ede729"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://desafiomost.app.n8n.cloud/webhook/welcome-submit",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "frontFile",
+              "inputDataFieldName": "Frente_CNH"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "backFile",
+              "inputDataFieldName": "Verso_CNH__Qrcode_"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 45000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1568,
+        -432
+      ],
+      "id": "f1ff0e0f-c128-47b5-97d0-f2497315a3a3",
+      "name": "http:submit-upload"
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldType": "html",
+              "elementName": "error_msg_html",
+              "html": "<div style=\"max-width:720px;margin:0 auto;\">\n  <h2 style=\"text-align:center;color:#b91c1c;margin:8px 0 16px;\">Não conseguimos processar os arquivos</h2>\n  <p style=\"margin:0 0 12px 0;\">Possíveis Motivos: \n    <strong>\n      {{ 'Arquivo inválido (frente ou verso com falhas), formato inválido (não é JPG/PNG) ou tamanho fora do limite (10 KB a 5 MB).' }}\n    </strong>\n  </p>\n  <ul style=\"margin:0 0 16px 18px;\">\n    <li>Frente e Verso obrigatórios.</li>\n    <li>Formatos aceitos: JPG/JPEG, PNG.</li>\n    <li>Tamanho: 10 KB a 5 MB.</li>\n  </ul>\n</div>"
+            }
+          ]
+        },
+        "options": {
+          "buttonLabel": "Fechar"
+        }
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        2608,
+        64
+      ],
+      "id": "889f3278-be2f-4203-945c-fa046de1804e",
+      "name": "ui:error-upload",
+      "webhookId": "1aef6130-9df1-4519-9188-93f52de73139"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4f57a2d0-edda-4792-8d6b-49a5d83acae9",
+              "leftValue": "={{ !!$binary[\"Frente_CNH\"] }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "a26405d9-4220-4ef0-9c98-2de4e8908570",
+              "leftValue": "={{ !!$binary[\"Verso_CNH__Qrcode_\"] }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        528,
+        16
+      ],
+      "id": "c4756687-25d4-46a8-b5a5-026fc0bbabbc",
+      "name": "if:exists-upload"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "5pSpokbL3tmMnujM",
+          "mode": "list",
+          "cachedResultName": "cnh_results",
+          "cachedResultUrl": "/projects/LnpfdWjdr4f8rLfu/datatables/5pSpokbL3tmMnujM"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.name }}",
+            "birth_date": "={{ $json.birth_date }}",
+            "cpf": "={{ $json.cpf }}",
+            "issue_date": "={{ $json.issue_date }}",
+            "category": "={{ $('set:normalize-core').item.json.category }}",
+            "expiry_date": "={{ $json.expiry_date }}",
+            "reason": "={{ $('set:normalize-core').item.json.reason }}",
+            "license_type": "={{ $('set:normalize-core').item.json.license_type }}",
+            "score": "={{ $json.score }}",
+            "mother_name": "={{ $json.mother_name }}",
+            "birth_place": "={{ $json.birth_place }}",
+            "father_name": "={{ $json.father_name }}",
+            "status": "={{ $json.status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "cpf",
+              "displayName": "cpf",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "birth_date",
+              "displayName": "birth_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "issue_date",
+              "displayName": "issue_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "expiry_date",
+              "displayName": "expiry_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "license_type",
+              "displayName": "license_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "reason",
+              "displayName": "reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "photoData",
+              "displayName": "photoData",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "photoMime",
+              "displayName": "photoMime",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "birth_place",
+              "displayName": "birth_place",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "father_name",
+              "displayName": "father_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "mother_name",
+              "displayName": "mother_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "optimizeBulk": false
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        2624,
+        -464
+      ],
+      "id": "34be45f0-8a5f-4f02-a346-b3a95359dcf0",
+      "name": "data:save-result"
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldType": "html",
+              "elementName": "result_card_html",
+              "html": "<div style=\"max-width:760px;margin:0 auto;\">\n\n  <div style=\"padding:12px 16px;border:1px solid #d1fae5;background:#ecfdf5;border-radius:8px;margin-bottom:16px;\">\n    <strong>Motivo:</strong> {{ $json.reason }}<br>\n  </div>\n\n  <div style=\"padding:12px 16px;border:1px solid #e5e7eb;background:#fff;border-radius:8px;\">\n    <p><strong>Nome:</strong> {{ $json.name || '—' }}</p>\n    <p><strong>CPF:</strong> {{ $json.cpf || '—' }}</p>\n    <p><strong>Nome da Mãe:</strong> {{ $json.mother_name || '—' }}</p>\n    <p><strong>Nome do Pai:</strong> {{ $json.father_name || '—' }}</p>\n    <p><strong>Data de Nascimento:</strong> {{ $json.birth_date || '—' }}</p>\n    <p><strong>Local de Nascimento:</strong> {{ $json.birth_place  || '—' }}</p>\n    <p><strong>Emissão:</strong> {{ $json.issue_date || '—' }}</p>\n    <p><strong>Validade:</strong> {{ $json.expiry_date || '—' }}</p>\n    <p><strong>Categoria:</strong> {{ $json.category || '—' }}</p>\n    <p><strong>Tipo de Habilitação:</strong> {{ $json.license_type || '—' }}</p>\n  </div>\n\n  <div style=\"text-align:center;margin-top:16px;\">\n  </div>\n</div>"
+            }
+          ]
+        },
+        "options": {
+          "buttonLabel": "Fechar"
+        }
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        2832,
+        -464
+      ],
+      "id": "4a8c6d5c-3406-48a3-989f-c7229670c726",
+      "name": "ui:result-upload",
+      "webhookId": "1590addc-54d8-4bad-9088-5de0e59be6c9"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d421c761-0843-463d-af48-48b8200644ce",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "834619eb-f7d1-46de-a8ec-34c47ec8692c",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 300,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1808,
+        -432
+      ],
+      "id": "08499975-4935-4920-b353-c2b9d1be95fb",
+      "name": "if:url-success"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fd3143be-7230-4290-937c-144919c993db",
+              "leftValue": "={{ [\"image/jpeg\",\"image/png\"].includes($binary[\"Frente_CNH\"].mimeType) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "ae49271e-b5e5-43d1-a6d2-5ff45fc53889",
+              "leftValue": "={{ [\"image/jpeg\",\"image/png\"].includes($binary[\"Verso_CNH__Qrcode_\"].mimeType) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        752,
+        -144
+      ],
+      "id": "4b4f8bd8-fd64-488c-8f80-36e0fe3f0ffa",
+      "name": "if:type-upload"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "81cb1909-710f-4ff2-a270-15fc2913be69",
+              "leftValue": "={{ $json['Frente CNH'].size >= 10000 }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "c0a8d97e-7d58-47ee-96d7-20475523e9e3",
+              "leftValue": "={{ $json['Frente CNH'].size <= 5242880 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        -288
+      ],
+      "id": "d0b2abe1-3065-4eb6-8fdf-af377c40e2e0",
+      "name": "if:size-upload"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "58073c18-19df-4d11-ba20-236819eb1e54",
+              "name": "approved",
+              "value": "={{ $json.body.body.status === \"match\" }}",
+              "type": "boolean"
+            },
+            {
+              "id": "c0cdc068-118e-4f56-bac8-f13b97b5fd0e",
+              "name": "status",
+              "value": "={{ $json.body.body.status }}",
+              "type": "string"
+            },
+            {
+              "id": "0fe81d4c-bed8-4a03-8a88-1126cf9a739d",
+              "name": "reason",
+              "value": "={{ $json.body.body.reason }}",
+              "type": "string"
+            },
+            {
+              "id": "4ba7f111-27e7-4df9-8148-e78ab05d6021",
+              "name": "score",
+              "value": "={{ $json.body.body.score }}",
+              "type": "string"
+            },
+            {
+              "id": "a983373b-90c4-4f0c-9137-b03927aa4389",
+              "name": "name",
+              "value": "={{ $json.body.body.person.name }}",
+              "type": "string"
+            },
+            {
+              "id": "8ccb32f7-2cd2-4065-9457-ca74099698b4",
+              "name": "cpf",
+              "value": "={{ $json.body.body.person.cpf }}",
+              "type": "string"
+            },
+            {
+              "id": "e4994fd5-44f9-4f36-916b-8e6483fa6719",
+              "name": "birth_date",
+              "value": "={{ $json.body.body.person.birth_date }}",
+              "type": "string"
+            },
+            {
+              "id": "5b6fa594-c0c9-47c6-a59f-4bc9a6494285",
+              "name": "issue_date",
+              "value": "={{ $json.body.body.person.issue_date }}",
+              "type": "string"
+            },
+            {
+              "id": "ab058d61-caed-4e58-a97e-e3f4605fed59",
+              "name": "expiry_date",
+              "value": "={{ $json.body.body.person.expiry_date }}",
+              "type": "string"
+            },
+            {
+              "id": "f63b0677-c634-41ae-bf30-b1e68758bea8",
+              "name": "category",
+              "value": "={{ $json.body.body.person.category }}",
+              "type": "string"
+            },
+            {
+              "id": "754b4d89-2b4d-4e73-80d9-0c4a6ee759ea",
+              "name": "license_type",
+              "value": "={{ $json.body.body.person.license_type }}",
+              "type": "string"
+            },
+            {
+              "id": "26873c03-cc15-4129-97ce-02864673f7ff",
+              "name": "mother_name",
+              "value": "={{ $json.body.body.person.mother_name }}",
+              "type": "string"
+            },
+            {
+              "id": "ef5639df-1c9f-40ef-95ca-62c27d46d8b1",
+              "name": "father_name",
+              "value": "={{ $json.body.body.person.father_name }}",
+              "type": "string"
+            },
+            {
+              "id": "d6571d46-bec9-4c94-887a-7e06d6ce66e8",
+              "name": "birth_place",
+              "value": "={{ $json.body.body.person.birth_place }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2144,
+        -448
+      ],
+      "id": "5bf5cb39-0ff3-4dd3-b651-3c5bf2433074",
+      "name": "set:normalize-core"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "78eb07df-352a-4006-8abb-fc751e8b0ab7",
+              "leftValue": "={{ $json.approved === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2352,
+        -448
+      ],
+      "id": "10077e76-785c-40d0-8add-2bc414b8e4fd",
+      "name": "if:approved"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "trigger:cnh-form": {
+      "main": [
+        [
+          {
+            "node": "ui:upload-form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ui:upload-form": {
+      "main": [
+        [
+          {
+            "node": "if:exists-upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "http:submit-upload": {
+      "main": [
+        [
+          {
+            "node": "if:url-success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if:exists-upload": {
+      "main": [
+        [
+          {
+            "node": "if:type-upload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ui:error-upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "data:save-result": {
+      "main": [
+        [
+          {
+            "node": "ui:result-upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if:url-success": {
+      "main": [
+        [
+          {
+            "node": "set:normalize-core",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ui:error-upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if:type-upload": {
+      "main": [
+        [
+          {
+            "node": "if:size-upload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ui:error-upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if:size-upload": {
+      "main": [
+        [
+          {
+            "node": "http:submit-upload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ui:error-upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set:normalize-core": {
+      "main": [
+        [
+          {
+            "node": "if:approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if:approved": {
+      "main": [
+        [
+          {
+            "node": "data:save-result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ui:error-upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9abcdbe7-144a-4f92-a2ed-69abc0ae1fc1",
+  "meta": {
+    "instanceId": "e81e5b6bd192ee947537b71671c433cd9cf6252203ad05248874bdfbb611bb5f"
+  },
+  "id": "cD0hwBRFrPtRPvCI",
+  "tags": []
+}

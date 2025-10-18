@@ -1,0 +1,1850 @@
+{
+  "name": "upload-img-to-url",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "welcome-submit",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2560,
+        1024
+      ],
+      "id": "e107fff2-593a-4843-b4ca-95c4d4042808",
+      "name": "welcome-submit",
+      "webhookId": "b377ddcc-59a9-4e53-801f-35a07aa992ea"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8bb3c522-2c0c-403e-8cb0-f2237c3bd7b8",
+              "name": "frontUrl",
+              "value": "={{ $json.body?.imageFrontUrl || $json.body?.frontUrl || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "f6426518-bafb-4b37-98e6-32cd862e802f",
+              "name": "backUrl",
+              "value": "={{ $json.body?.imageBackUrl || $json.body?.backUrl || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2352,
+        1024
+      ],
+      "id": "012471f7-b5c4-4547-8849-726cf5efbdfb",
+      "name": "normalize-input-welcome"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1128b559-e065-4d73-bacc-53f7de5301f7",
+              "leftValue": "={{ !!$binary.frontFile }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "ddf712a3-9c66-4615-84ed-822b39013c17",
+              "leftValue": "={{ !!$binary.backFile }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1984,
+        1024
+      ],
+      "id": "0dfd0bb2-66f6-432c-b4e5-d8a896dea4d3",
+      "name": "detect-mode"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "eb5a7765-caf7-4064-b627-9db9810b84f3",
+              "leftValue": "={{ ['image/jpeg','image/png'].includes($binary.frontFile?.mimeType) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "ae080342-b5d5-43b6-825f-db5ac35ca55a",
+              "leftValue": "={{ ['image/jpeg','image/png'].includes($binary.backFile?.mimeType) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1760,
+        864
+      ],
+      "id": "bc87db6c-0dbf-4427-a757-6d8e6666939f",
+      "name": "mime-ok-welcome"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bb47be4f-df5f-4cdc-bb66-bd265ca71346",
+              "leftValue": "={{ !!$binary.frontFile }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "548ebf92-0a18-4061-bceb-f2600ee81bb4",
+              "leftValue": "={{ !!$binary.backFile }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1360,
+        768
+      ],
+      "id": "2ccb5f6a-d8d6-4e05-bc72-ffd9026bd4b0",
+      "name": "size-ok-welcome"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.SUPABASE_URL }}/storage/v1/object/{{ $vars.BUCKET }}/front/{{ $json.uuid }}-front.jpg",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "image/jpeg"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$vars.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "x-upsert",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "frontFile",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1056,
+        336
+      ],
+      "id": "258ec01c-9ffe-40c6-9795-a313059753f4",
+      "name": "upload-front-welcome"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.SUPABASE_URL }}/storage/v1/object/sign/{{ $vars.BUCKET }}/front/{{ $node[\"ensure-uuid\"].json.uuid }}-front.jpg",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$vars.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "apikey",
+              "value": "={{$vars.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{ \"expiresIn\": 300 }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -608,
+        128
+      ],
+      "id": "11fd9a8f-7aee-478d-acb1-6f9c1858c563",
+      "name": "sign-front-welcome"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.SUPABASE_URL }}/storage/v1/object/sign/{{ $vars.BUCKET }}/back/{{ $node[\"ensure-uuid\"].json.uuid }}-back.jpg",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$vars.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "apikey",
+              "value": "={{$vars.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{ \"expiresIn\": 300 }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -640,
+        608
+      ],
+      "id": "30dd34ae-270e-403c-baf7-a4e76eaa8e4c",
+      "name": "sign-back-welcome"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        480,
+        352
+      ],
+      "id": "ed05c591-3ca8-4155-8f82-daeef815262b",
+      "name": "merge-signed-welcome"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4cd37e25-5863-41bc-9227-fb54af93689f",
+              "name": "imageFrontUrl",
+              "value": "={{ $json.frontSignedUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "3d3902d3-2fb9-426f-a5ac-5b8b08939e32",
+              "name": "imageBackUrl",
+              "value": "={{ $json.backSignedUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "617b1f2f-ac60-4ee8-a4be-ab670c4a5d1d",
+              "name": "bucket",
+              "value": "={{$vars.BUCKET}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        672,
+        352
+      ],
+      "id": "c15168d8-587f-4006-b648-582d8d6b1fbe",
+      "name": "build-upload-urls-welcome"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "21baf0dd-3ed3-4a15-ab87-3227d3790d77",
+              "name": "uuid",
+              "value": "={{$execution.id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2192,
+        1024
+      ],
+      "id": "281f2b64-978f-4409-bb49-73f79a020079",
+      "name": "ensure-uuid"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2144,
+        128
+      ],
+      "id": "4e2ebc47-01c9-4d64-ae10-d62378a3b22f",
+      "name": "respond-200-welcome"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6f6bd203-33ea-4ebd-9efe-f81bc8c6b54c",
+              "name": "imageFrontUrl",
+              "value": "={{ $json.imageFrontUrl || $json.frontSignedUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "712015d2-6f2d-400b-b5c8-349a45e54ebb",
+              "name": "imageBackUrl",
+              "value": "={{ $json.imageBackUrl || $json.backSignedUrl }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        352
+      ],
+      "id": "b8358413-450a-48eb-a467-233c9fff9d07",
+      "name": "bridge-to-core"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://desafiomost.app.n8n.cloud/webhook/cnh-verify",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"frontUrl\": \"{{ $json.imageFrontUrl }}\",\n  \"backUrl\": \"{{ $json.imageBackUrl }}\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1296,
+        144
+      ],
+      "id": "84e7de4b-ee33-46a0-881e-68185c04fac7",
+      "name": "core-call"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1bb4165d-493b-4ada-bb96-ab1f7f4c58e4",
+              "name": "data",
+              "value": "={   \"bucket\": \"{{$json.bucket}}\",   \"path_front\": \"{{$vars.BUCKET}}/front/{{$json._uuid}}.jpg\",   \"path_back\": \"{{$vars.BUCKET}}/back/{{$json._uuid}}.jpg\",   \"front_url\": \"{{$json.frontUrl}}\",   \"back_url\": \"{{$json.backUrl}}\",   \"tip\": \"URLs expiram em 5 minutos.\" }",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1920,
+        128
+      ],
+      "id": "a032b8a5-3909-41d4-9e77-df848babf1dc",
+      "name": "build-response-200-welcome"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "09ccd743-f58d-4534-b3ce-40967bd5c908",
+              "name": "problem",
+              "value": "mime_invalid",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1344,
+        1168
+      ],
+      "id": "265a8091-5e57-4f05-950d-2eadd38ea68e",
+      "name": "mark-mime-error"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "357c1b32-ae00-4e8c-bf92-03bcd1db2892",
+              "name": "status_code",
+              "value": 400,
+              "type": "number"
+            },
+            {
+              "id": "b5dba4b9-27c9-422a-ab04-fb3f9451ba82",
+              "name": "response_body",
+              "value": "={{ ( () => {\n  const frontOk = $binary?.front?.mimeType?.startsWith('image/');\n  const backOk  = $binary?.back?.mimeType?.startsWith('image/');\n\n  const errors = [];\n  if (!frontOk) errors.push({ field: 'frontFile', mimeType: $binary?.front?.mimeType || null });\n  if (!backOk)  errors.push({ field: 'backFile',  mimeType: $binary?.back?.mimeType  || null });\n\n  return {\n    ok: false,\n    status: 'invalid_mime',\n    message: 'Arquivo inválido: somente imagens são aceitas.',\n    errors,\n    hints: [\n      'Tipos aceitos: image/jpeg, image/png, image/webp',\n      'Envie multipart/form-data em frontFile e backFile'\n    ],\n    context: {\n      uuid: $json._uuid,\n      front: { fileName: $binary?.front?.fileName, mimeType: $binary?.front?.mimeType },\n      back:  { fileName: $binary?.back?.fileName,  mimeType: $binary?.back?.mimeType }\n    }\n  };\n})() }}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1136,
+        1168
+      ],
+      "id": "0f4f6209-19f6-4843-94a1-72eeb6a5db65",
+      "name": "build-bad-request-mime"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "990fea8d-e55a-4371-8013-6161f57833b7",
+              "name": "problem",
+              "value": "file_too_large",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1152,
+        960
+      ],
+      "id": "a7caa4f8-e2e0-4499-ba33-ee31fa916713",
+      "name": "mark-size-error"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "91ade121-2240-44b3-b609-be6956f1eb31",
+              "name": "status_code",
+              "value": 400,
+              "type": "number"
+            },
+            {
+              "id": "41770c3e-4284-4110-a7e1-912a37ee6b30",
+              "name": "response_body",
+              "value": "={{\n  {\n    ok: false,\n    status: \"file_size_invalid\",\n    message: \"Verifique o tamanho dos arquivos enviados.\",\n    errors: [],\n    hints: [\n      \"Cada arquivo deve ter entre 10 KB e 5 MB\"\n    ],\n    context: {\n      frontBytes: $binary.frontFile?.data ? Math.floor(($binary.frontFile.data.replace(/=+$/,'').length * 3) / 4) : 0,\n      backBytes:  $binary.backFile?.data  ? Math.floor(($binary.backFile.data.replace(/=+$/,'').length * 3) / 4) : 0\n    }\n  }\n}}",
+              "type": "object"
+            },
+            {
+              "id": "4d501f39-6d52-4bcd-8863-6a4fbe98450b",
+              "name": "frontBytes",
+              "value": "={{ Math.floor(($binary.frontFile?.data || '').replace(/=+$/,'').length * 3 / 4) }}",
+              "type": "number"
+            },
+            {
+              "id": "2498602d-5d71-42f5-9739-2358f725dcb8",
+              "name": "backBytes",
+              "value": "={{ Math.floor(($binary.backFile?.data || '').replace(/=+$/,'').length * 3 / 4) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -944,
+        960
+      ],
+      "id": "55c56b55-f3d4-4604-ae1b-bdcbacda1116",
+      "name": "build-bad-request-size"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "def5f7dc-2f5e-4e2d-a4de-15d75c1c35c7",
+              "name": "problem",
+              "value": "etect_mode_invalid",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1744,
+        1376
+      ],
+      "id": "dc452890-03fa-4da2-ad99-3efb36011b81",
+      "name": "mark-detect-error"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dc694adc-4680-4e3a-be2d-e789780e1cea",
+              "name": "status_code",
+              "value": 400,
+              "type": "number"
+            },
+            {
+              "id": "e3d7aa93-5e47-4ca9-b21a-0642a1c188ab",
+              "name": "response_body",
+              "value": "={{   {     ok: false,     status: 'invalid_input',     message: 'Entrada inválida. Envie as imagens nos campos frontFile e backFile (multipart/form-data).',     errors: [],     hints: [       'Use Content-Type: multipart/form-data',       'Campos obrigatórios: frontFile e backFile'     ],     context: {       uuid: $json._uuid,       hasBinary: !!$binary,       bodyKeys: Object.keys($json.body || $json)     }   } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1552,
+        1376
+      ],
+      "id": "6330ceda-3a67-4cd2-a2a5-3641918ad48f",
+      "name": "build-bad-request-detect"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": "={{ $json.status_code || 400 }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -1344,
+        1376
+      ],
+      "id": "d6323068-eece-44ee-a108-9778609d4094",
+      "name": "respond-400-detect"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": "={{ $json.status_code || 400 }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -928,
+        1168
+      ],
+      "id": "160b894b-6ae5-44cd-b483-29a1fe094bc0",
+      "name": "respond-400-mime"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": "={{ $json.status_code || 400 }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -720,
+        960
+      ],
+      "id": "67484c3a-d9b2-4373-a827-962f3970fc04",
+      "name": "respond-400-size"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ab138f67-d6b1-410c-a3bf-03687a6c44a6",
+              "name": "frontName",
+              "value": "={{ $binary.frontFile?.fileName }}",
+              "type": "string"
+            },
+            {
+              "id": "9bbab668-66a7-43b1-bf9c-b7023950de99",
+              "name": "backName",
+              "value": "={{ $binary.backFile?.fileName }}",
+              "type": "string"
+            },
+            {
+              "id": "f42a417a-4e35-4af7-92f6-49ea54a87544",
+              "name": "frontBytes",
+              "value": "={{\n  $binary.frontFile?.data\n    ? Math.floor(($binary.frontFile.data.replace(/=+$/,'').length * 3) / 4)\n    : 0\n}}",
+              "type": "number"
+            },
+            {
+              "id": "f88e366d-a5af-485d-b3b6-20ff018eb0cc",
+              "name": "backBytes",
+              "value": "={{\n  $binary.backFile?.data\n    ? Math.floor(($binary.backFile.data.replace(/=+$/,'').length * 3) / 4)\n    : 0\n}}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1552,
+        768
+      ],
+      "id": "ef39ea80-7901-4feb-b6b4-25898a28b131",
+      "name": "debug"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7e47cc3d-6eca-4b9f-8832-f239d971fba3",
+              "name": "frontSignedUrl",
+              "value": "={{\n  (function () {\n    const raw = $json.signedURL || $json.signedUrl || $json.signed_url || '';\n    if (!raw) return '';\n    // Se vier só '/object/sign/...', prefixa '/storage/v1'\n    if (raw.startsWith('/object/')) return $vars.SUPABASE_URL + '/storage/v1' + raw;\n    // Se já vier com '/storage/v1/object/sign/...' mas sem host\n    if (raw.startsWith('/storage/v1/')) return $vars.SUPABASE_URL + raw;\n    // Se já vier completo (começando com http), devolve como está\n    return raw;\n  })()\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -128,
+        -16
+      ],
+      "id": "e0e8b5c0-10fd-4c99-8a60-bf1c63af6a8a",
+      "name": "pick-front-signed"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7e47cc3d-6eca-4b9f-8832-f239d971fba3",
+              "name": "backSignedUrl",
+              "value": "={{\n  (function () {\n    const raw = $json.signedURL || $json.signedUrl || $json.signed_url || '';\n    if (!raw) return '';\n    // Se vier só '/object/sign/...', prefixa '/storage/v1'\n    if (raw.startsWith('/object/')) return $vars.SUPABASE_URL + '/storage/v1' + raw;\n    // Se já vier com '/storage/v1/object/sign/...' mas sem host\n    if (raw.startsWith('/storage/v1/')) return $vars.SUPABASE_URL + raw;\n    // Se já vier completo (começando com http), devolve como está\n    return raw;\n  })()\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        528
+      ],
+      "id": "94d8d542-e767-4833-b8ba-fc232654ad46",
+      "name": "pick-back-signed"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0e4b625a-4a4c-49c8-8185-5b60a18f8623",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "8e5adf4c-ef57-4273-bad0-ed9351a30e80",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 300,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1488,
+        144
+      ],
+      "id": "000a6400-8c61-4434-9d02-136ee03448cd",
+      "name": "if:core-http"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7b15cc7c-f397-40e6-ad2b-06ec2fa4a674",
+              "name": "error",
+              "value": "http_error",
+              "type": "string"
+            },
+            {
+              "id": "14913b36-ca52-46af-9df6-c68db46ba2e1",
+              "name": "message",
+              "value": "={{ $json.statusMessage || 'Erro ao chamar o core' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1696,
+        240
+      ],
+      "id": "18495406-9240-4c8c-a8da-108915da227c",
+      "name": "set:http-error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ed5cef4f-9063-49f3-87be-ddb298e96041",
+              "leftValue": "={{ !!$json.imageFrontUrl && $json.imageFrontUrl.includes('?token=') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "291d03ea-6e28-4b8f-8956-99e89bb99cf4",
+              "leftValue": "={{ !!$json.imageBackUrl && $json.imageBackUrl.includes('?token=') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1088,
+        352
+      ],
+      "id": "daa89655-1341-4f0f-a3db-33a50ce4f89b",
+      "name": "if:url-ready"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e9378d3c-9461-46a6-bda4-23d9eee151c3",
+              "name": "message",
+              "value": "URLs inválidas ou ausentes (front/back).",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1456,
+        368
+      ],
+      "id": "05220e87-9328-4087-bb15-f2305ae28038",
+      "name": "set:url-error"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 400,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "responseKey": "={   \"status\": \"error\",   \"message\": \"={{$json.message || 'Falha ao validar CNH'}}\",   \"details\": {     \"statusCode\": \"={{$json.statusCode}}\",     \"statusMessage\": \"={{$json.statusMessage}}\",     \"raw\": \"={{$json.raw || $json.body}}\"   } }"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1920,
+        368
+      ],
+      "id": "fb2c47eb-af1a-45ae-98e5-8762aea65a76",
+      "name": "res:error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "09c16638-ced0-4167-9f8f-6fb3fbdfc4e7",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "597cb0a0-d8d4-4be1-82a6-67bd19af73ba",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 300,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -848,
+        336
+      ],
+      "id": "2f0aea41-7164-4553-bdf1-0bfd7bee69d4",
+      "name": "front-upload-ok?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5f665f1e-3fd7-458f-8770-c9a5e95b732d",
+              "name": "messege",
+              "value": "=Falha no upload da frente. \nstatusCode = {{$json.statusCode}} )",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -608,
+        352
+      ],
+      "id": "ca7af889-c371-47cb-bb7d-b0ef45bd96a2",
+      "name": "set:front-upload-error"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5f665f1e-3fd7-458f-8770-c9a5e95b732d",
+              "name": "messege",
+              "value": "=Falha no upload da frente. \nstatusCode = {{$json.statusCode}} )",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -640,
+        768
+      ],
+      "id": "a85fab71-b854-4902-9324-915b9a004ccc",
+      "name": "set:back-upload-error"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": "={{ $json.status_code || 400 }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -384,
+        352
+      ],
+      "id": "f9a4284e-d70d-438f-8d1a-a39a467db269",
+      "name": "respond-400-front-upload"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": "={{ $json.status_code || 400 }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -432,
+        768
+      ],
+      "id": "64fac227-2301-4f91-9c46-4d857f29ebc2",
+      "name": "respond-400-back-upload"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a576c32c-9697-4440-8cf4-f7f4f9f461a7",
+              "name": "messege",
+              "value": "Assinatura faltante ou inválida.",
+              "type": "string"
+            },
+            {
+              "id": "cb4813f9-5afa-425d-9d09-5d416b3584b8",
+              "name": "phase",
+              "value": "sign-front",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -128,
+        240
+      ],
+      "id": "8bff7b15-ce89-4090-9bb8-f0712be5e881",
+      "name": "set:front-sign-error"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": "={{ $json.status_code || 400 }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        96,
+        240
+      ],
+      "id": "dcaf07c7-b49a-4fca-8d29-ca8982c456af",
+      "name": "respond-400-sign-front"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0a94a8f7-de66-4997-84b0-50e1fca00ab1",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "b876a612-2bf6-45c9-b356-7e59869c7359",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 300,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -880,
+        624
+      ],
+      "id": "4e590e27-7d6d-4c78-aef0-57db5d7e756a",
+      "name": "back-upload-ok?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a9e1d29a-b9f0-43f8-bff4-b1caf55d5bff",
+              "leftValue": "={{ !!($json.signedURL || $json.signedUrl || $json.signed_url) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -400,
+        128
+      ],
+      "id": "256ac381-853f-4c36-a4e5-32179e6cebcb",
+      "name": "front-signed-ok?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "499b2418-3582-4607-b5a1-16e3c276cfe5",
+              "leftValue": "={{ !!($json.signedURL || $json.signedUrl || $json.signed_url) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -432,
+        608
+      ],
+      "id": "818b572a-c26f-4057-82e8-3616a84bbee6",
+      "name": "back-signed-ok?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f12ee99e-5111-4a51-afd7-313c494e1e8d",
+              "name": "messege",
+              "value": "Assinatura faltante ou inválida. ",
+              "type": "string"
+            },
+            {
+              "id": "9f7ad087-a14e-4e9e-8440-fbeaeb7f9f5e",
+              "name": "phase",
+              "value": "sign-back",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        688
+      ],
+      "id": "094d59a6-a75d-496b-b225-108e620850b7",
+      "name": "set:back-sign-error"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": "={{ $json.status_code || 400 }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        48,
+        688
+      ],
+      "id": "e6abed5d-24e4-4293-81d7-a4f2fa7e04f7",
+      "name": "respond-400-sign-back"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.SUPABASE_URL }}/storage/v1/object/{{ $vars.BUCKET }}/back/{{ $json.uuid }}-back.jpg",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "image/jpeg"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$vars.SUPABASE_SERVICE_KEY}}"
+            },
+            {
+              "name": "x-upsert",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "backFile",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1088,
+        640
+      ],
+      "id": "91afaf91-480d-4ed9-ba85-ecda6b51c4ac",
+      "name": "upload-back-welcome"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "welcome-submit": {
+      "main": [
+        [
+          {
+            "node": "normalize-input-welcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "normalize-input-welcome": {
+      "main": [
+        [
+          {
+            "node": "ensure-uuid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "detect-mode": {
+      "main": [
+        [
+          {
+            "node": "mime-ok-welcome",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "mark-detect-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mime-ok-welcome": {
+      "main": [
+        [
+          {
+            "node": "debug",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "mark-mime-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "size-ok-welcome": {
+      "main": [
+        [
+          {
+            "node": "upload-front-welcome",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "upload-back-welcome",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "mark-size-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "upload-front-welcome": {
+      "main": [
+        [
+          {
+            "node": "front-upload-ok?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "sign-front-welcome": {
+      "main": [
+        [
+          {
+            "node": "front-signed-ok?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "sign-back-welcome": {
+      "main": [
+        [
+          {
+            "node": "back-signed-ok?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "merge-signed-welcome": {
+      "main": [
+        [
+          {
+            "node": "build-upload-urls-welcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build-upload-urls-welcome": {
+      "main": [
+        [
+          {
+            "node": "bridge-to-core",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ensure-uuid": {
+      "main": [
+        [
+          {
+            "node": "detect-mode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "bridge-to-core": {
+      "main": [
+        [
+          {
+            "node": "if:url-ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "core-call": {
+      "main": [
+        [
+          {
+            "node": "if:core-http",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build-response-200-welcome": {
+      "main": [
+        [
+          {
+            "node": "respond-200-welcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mark-mime-error": {
+      "main": [
+        [
+          {
+            "node": "build-bad-request-mime",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build-bad-request-mime": {
+      "main": [
+        [
+          {
+            "node": "respond-400-mime",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mark-size-error": {
+      "main": [
+        [
+          {
+            "node": "build-bad-request-size",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build-bad-request-size": {
+      "main": [
+        [
+          {
+            "node": "respond-400-size",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mark-detect-error": {
+      "main": [
+        [
+          {
+            "node": "build-bad-request-detect",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build-bad-request-detect": {
+      "main": [
+        [
+          {
+            "node": "respond-400-detect",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "debug": {
+      "main": [
+        [
+          {
+            "node": "size-ok-welcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pick-front-signed": {
+      "main": [
+        [
+          {
+            "node": "merge-signed-welcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pick-back-signed": {
+      "main": [
+        [
+          {
+            "node": "merge-signed-welcome",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "if:core-http": {
+      "main": [
+        [
+          {
+            "node": "build-response-200-welcome",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "set:http-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set:http-error": {
+      "main": [
+        [
+          {
+            "node": "res:error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if:url-ready": {
+      "main": [
+        [
+          {
+            "node": "core-call",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "set:url-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set:url-error": {
+      "main": [
+        [
+          {
+            "node": "res:error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "front-upload-ok?": {
+      "main": [
+        [
+          {
+            "node": "sign-front-welcome",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "set:front-upload-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set:front-upload-error": {
+      "main": [
+        [
+          {
+            "node": "respond-400-front-upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set:back-upload-error": {
+      "main": [
+        [
+          {
+            "node": "respond-400-back-upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set:front-sign-error": {
+      "main": [
+        [
+          {
+            "node": "respond-400-sign-front",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "back-upload-ok?": {
+      "main": [
+        [
+          {
+            "node": "sign-back-welcome",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "set:back-upload-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "front-signed-ok?": {
+      "main": [
+        [
+          {
+            "node": "pick-front-signed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "set:front-sign-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "back-signed-ok?": {
+      "main": [
+        [
+          {
+            "node": "pick-back-signed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "set:back-sign-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set:back-sign-error": {
+      "main": [
+        [
+          {
+            "node": "respond-400-sign-back",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "upload-back-welcome": {
+      "main": [
+        [
+          {
+            "node": "back-upload-ok?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4621c349-53a3-47f0-9665-16cf70490e1a",
+  "meta": {
+    "instanceId": "e81e5b6bd192ee947537b71671c433cd9cf6252203ad05248874bdfbb611bb5f"
+  },
+  "id": "6P4wJslo0dKpGpLO",
+  "tags": []
+}

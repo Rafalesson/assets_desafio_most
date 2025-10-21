@@ -17,7 +17,12 @@ O projeto é composto por **três fluxos principais**:
 ![core fluxo](./workflows/core-fluxo.jpeg)
 
 ---
+## Teste você mesmo
+Para testar o funcionamento do fluxo clique na URL abaixo:
 
+- https://desafiomost.app.n8n.cloud/form/validar-cnh
+
+---
 ## 🧩 Estrutura dos Workflows
 
 ### 1. **Fluxo UI – `validation-cnh-ui`**
